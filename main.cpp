@@ -8,6 +8,31 @@ void error(std::string s1, std::string s2 = ""){
     throw std::runtime_error(s1+s2);
 }
 
+ void keep_window_open()
+{
+	std::cin.clear();
+	std::cout << "Please enter a character to exit\n";
+	char ch;
+	std::cin >> ch;
+	return;
+}
+
+ void keep_window_open(std::string s)
+{
+	if (s == "") return;
+	std::cin.clear();
+	std::cin.ignore(120, '\n');
+	for (;;) {
+		std::string ss;
+        do {
+			std::cout << "Please enter " << s << " to exit\n";
+        } while (std::cin >> ss && ss != s);
+        
+		return;
+	}
+}
+ 
+
 class Token{
 public:
     char kind;
@@ -126,25 +151,41 @@ double primary() {
     case 'n':
         return t.value;
     default:
-        error("Expected factor.");
+        error("Invalid factor.");
     }
 }
 
 int main(int argc, char const *argv[])
 {
-    double val = 0;
-    std::cout << "> ";
-    while(std::cin){
-        Token t = ts.get();
-        if (t.kind=='q') 
-            break;
-        if (t.kind==';') {
-            std::cout<<"= "<<val<<'\n';
+    try
+    {
+        while(std::cin){
             std::cout << "> ";
-        }
-        else
+            Token t = ts.get();
+            if (t.kind=='q') 
+                break;
+            while(t.kind==';') 
+                t = ts.get();
+            if (t.kind=='q' || t.kind=='Q') 
+                break;
             ts.putback(t);
-        val = expression();
+            std::cout<<"= "<<expression()<<'\n';
+        }
+        keep_window_open();
+        return 0;
     }
-    return 0;
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        keep_window_open("~~");
+        return 1;
+    }
+    catch(...)
+    {
+        std::cerr << "Exception \n";
+        keep_window_open("~~");
+        return 2;
+    }
+    
+    
 }
