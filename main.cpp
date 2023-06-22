@@ -34,6 +34,16 @@ void error(std::string s1, std::string s2 = ""){
 }
  
 
+const char quit = 'q';
+const char QUIT = 'Q';
+const char print = ';';
+
+const std::string prompt = "> ";
+const std::string result = "= ";
+
+const char number = 'n';
+
+
 class Token{
 public:
     char kind;
@@ -67,9 +77,9 @@ Token Token_stream::get(){
     std::cin >> ch;
     switch (ch) 
     {
-    case 'q': case 'Q':
-        return Token{'q'};
-    case ';':
+    case quit: case QUIT:
+        return Token{quit};
+    case print:
     case '(': case ')':
     case '*': case '/': case '%':
     case '+': case '-':
@@ -81,7 +91,7 @@ Token Token_stream::get(){
             std::cin.putback(ch);
             double val;
             std::cin >> val;
-            return Token{'n', val};
+            return Token{number, val};
         }
     
     default:
@@ -158,7 +168,7 @@ double primary() {
             if (t.kind != ')') error("Expected ')'.");
             return d;
         }
-    case 'n':
+    case number:
         return t.value;
     case '-':
         return -primary();
@@ -174,16 +184,14 @@ int main(int argc, char const *argv[])
     try
     {
         while(std::cin){
-            std::cout << "> ";
+            std::cout << prompt;
             Token t = ts.get();
-            if (t.kind=='q') 
-                break;
-            while(t.kind==';') 
+            while(t.kind == print) 
                 t = ts.get();
-            if (t.kind=='q' || t.kind=='Q') 
+            if (t.kind == quit || t.kind == QUIT) 
                 break;
             ts.putback(t);
-            std::cout<<"= "<<expression()<<'\n';
+            std::cout<<result<<expression()<<'\n';
         }
         keep_window_open();
         return 0;
