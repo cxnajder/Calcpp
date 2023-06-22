@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <cmath>
 
 
 void error(std::string s1, std::string s2 = ""){
@@ -70,7 +71,7 @@ Token Token_stream::get(){
         return Token{'q'};
     case ';':
     case '(': case ')':
-    case '*': case '/':
+    case '*': case '/': case '%':
     case '+': case '-':
         return Token{ch};
     case '.':
@@ -129,6 +130,15 @@ double term(){
             left /= primary();
             t = ts.get();
             break;
+        case '%':
+            {
+                double d = primary();
+                if (d == 0) 
+                    error("Division by zero.");
+                left = fmod(left, d);
+                t = ts.get();
+                break;
+            }
         default:
             ts.putback(t);
             return left;
@@ -150,6 +160,10 @@ double primary() {
         }
     case 'n':
         return t.value;
+    case '-':
+        return -primary();
+    case '+':
+        return primary();
     default:
         error("Invalid factor.");
     }
