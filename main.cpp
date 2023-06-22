@@ -179,20 +179,24 @@ double primary() {
     }
 }
 
+void calculate() {
+    while(std::cin){
+        std::cout << prompt;
+        Token t = ts.get();
+        while(t.kind == print) 
+            t = ts.get();
+        if (t.kind == quit || t.kind == QUIT) 
+            break;
+        ts.putback(t);
+        std::cout<<result<<expression()<<'\n';
+    }
+}
+
 int main(int argc, char const *argv[])
 {
     try
     {
-        while(std::cin){
-            std::cout << prompt;
-            Token t = ts.get();
-            while(t.kind == print) 
-                t = ts.get();
-            if (t.kind == quit || t.kind == QUIT) 
-                break;
-            ts.putback(t);
-            std::cout<<result<<expression()<<'\n';
-        }
+        calculate();   
         keep_window_open();
         return 0;
     }
