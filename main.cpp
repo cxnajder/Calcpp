@@ -5,9 +5,9 @@
 
     Hist:
         Reconstruction: cxnajder            summer 2023
-        Update: Bjorn Stroustrup    august 2007
+        Update: Bjarne Stroustrup    august 2007
         ...
-        Original author: Bjorne Stroustrup
+        Original author: Bjaorne Stroustrup
             (bs@cs.tamu.edu)        spring 2004
         
     This code implements calculator with basic expresions
@@ -102,6 +102,7 @@ public:
     Token_stream();
     Token get();
     void putback(Token t);
+    void ignore(char c); //will ignore cin till c (including)
 private:
     Token buffer;
     bool full;
@@ -113,6 +114,19 @@ void Token_stream::putback(Token t){
     if (full) error("Cannot call putback() when buffer is full.");
     this->buffer = t;
     this->full = true;
+}
+
+void Token_stream::ignore(char c){
+    //check buffor first
+    if (full && c == buffer.kind) {
+        full=false;
+        return;
+    }
+    full = false;
+    //check cin input
+    char ch = 0;
+    while(std::cin>>ch)
+        if (ch==c) return;
 }
 
 Token Token_stream::get(){
@@ -230,21 +244,36 @@ double primary() {
     }
 }
 
+void clean_up() {
+    ts.ignore(print);
+}
+
 void calculate() {
+
     while(std::cin){
-        std::cout << prompt;
-        Token t = ts.get();
-        while(t.kind == print) 
-            t = ts.get();
-        if (t.kind == quit || t.kind == QUIT) 
-            break;
-        ts.putback(t);
-        std::cout<<result<<expression()<<'\n';
+        try {
+            std::cout << prompt;
+            Token t = ts.get();
+            while(t.kind == print) 
+                t = ts.get();
+            if (t.kind == quit || t.kind == QUIT) 
+                break;
+            ts.putback(t);
+            std::cout<<result<<expression()<<'\n';
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+            clean_up();
+        }
     }
+    
+    
 }
 
 int main(int argc, char const *argv[])
 {
+    
     try
     {
         calculate();   
