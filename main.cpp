@@ -88,23 +88,25 @@ void error(std::string s1, std::string s2 = ""){
 	}
 }
  
-
-const char quit = 'q';
+//CONSTANT VALUES: *******************************************
+//TODO: TURN INTO DICT IN FUTURE
 const char QUIT = 'Q';
+const char quit = 'q';
 const char print = ';';
-
 const std::string prompt = "> ";
 const std::string result = "= ";
-
 const char number = 'n';
 const char let = 'l';
+const char vname = 'v';
+const std::string dec_key = "let";
 
+//TOKEN ******************************************************
 class Token{
 public:
     char kind;
     double value;
 };
-
+//TOKEN_STREAM **********************************************
 class Token_stream{
 public:
     Token_stream();
@@ -171,20 +173,22 @@ Token Token_stream::get(){
     }
 }
 
+//VARIABLES **********************************************************
 class Variable {
 public:
     std::string name;
     double value;
 };
 
-double get_value(std::vector<Variable> & var_table, std::string s){
+std::vector<Variable>  var_table;
+
+double get_value(const std::string & s){
     for (int i = 0; i < var_table.size(); ++i)
             if (var_table.at(i).name == s )
                 return var_table.at(i).value;
     error("Accessing: undefined variable ", s);    
 }
-
-void set_value(std::vector<Variable> & var_table, std::string s, const double & d){
+void set_value(const std::string & s, const double & d){
     for (int i = 0; i < var_table.size(); ++i)
             if (var_table.at(i).name == s ){
                 var_table.at(i).value = d;
@@ -192,7 +196,20 @@ void set_value(std::vector<Variable> & var_table, std::string s, const double & 
             }
     error("Changing: undefined variable ", s);    
 }
+bool is_declared (const std::string & var_name){
+    for (auto var: var_table)
+        if (var.name == var_name)
+            return true;
+    return false;
+}
+void define_var(const std::string & name, const double & val){
+    if (is_declared(name))
+        error(name, " - multiplyied declaration.");
+    var_table.push_back(Variable{name, val});
+    return;
+}
 
+//REST OF FUN ***************************************************************************
 double statement(Token_stream & ts);
 double declaration(Token_stream & ts);
 double expression(Token_stream & ts);
@@ -211,6 +228,18 @@ double statement(Token_stream & ts)
         ts.putback(t);
         return expression(ts);
     }
+}
+
+double declaration(Token_stream & ts){
+    Token t = ts.get();
+    if (t.kind != vname)
+        error("Expected name in declaration.");
+    std::string var_name = ""; //FIX LATER -- IMPROVE
+    t = ts.get();
+    if (t.kind != '=')
+        error("Missing '=' sign in declaration.");
+    double d = expression(ts);
+    define_var(var_name, d);
 }
 
 double expression(Token_stream & ts){
@@ -293,7 +322,7 @@ void clean_up(Token_stream & ts) {
 
 void calculate() {
 
-    Token_stream ts;
+    Token_stream ts; // TODO: MAKE IT A SINGLETON (TOKEN_STREAM)
     std::vector<Variable> var_table;
     while(std::cin){
         try {
