@@ -164,24 +164,22 @@ Token Token_stream::get(){
     }
 }
 
-double expression();
-double term();
-double primary();
+double expression(Token_stream & ts);
+double term(Token_stream & ts);
+double primary(Token_stream & ts);
 
-Token_stream ts;
-
-double expression(){
-    double left = term();
+double expression(Token_stream & ts){
+    double left = term(ts);
     Token t = ts.get();
     while(true) {
         switch (t.kind)
         {
         case '+':
-            left += term();
+            left += term(ts);
             t = ts.get();
             break;
         case '-':
-            left -= term();
+            left -= term(ts);
             t = ts.get();
             break;
         default:
@@ -191,23 +189,23 @@ double expression(){
     }
 }
 
-double term(){
-    double left = primary();
+double term(Token_stream & ts){
+    double left = primary(ts);
     Token t = ts.get();
     while (true) {
         switch (t.kind)
         {
         case '*':
-            left *= primary();
+            left *= primary(ts);
             t = ts.get();
             break;
         case '/':
-            left /= primary();
+            left /= primary(ts);
             t = ts.get();
             break;
         case '%':
             {
-                double d = primary();
+                double d = primary(ts);
                 if (d == 0) 
                     error("Division by zero.");
                 left = fmod(left, d);
@@ -222,13 +220,13 @@ double term(){
     
 }
 
-double primary() {
+double primary(Token_stream & ts) {
     Token t = ts.get();
     switch (t.kind)
     {
     case '(':
         {
-            double d = expression();
+            double d = expression(ts);
             t = ts.get();
             if (t.kind != ')') error("Expected ')'.");
             return d;
@@ -236,20 +234,21 @@ double primary() {
     case number:
         return t.value;
     case '-':
-        return -primary();
+        return -primary(ts);
     case '+':
-        return primary();
+        return primary(ts);
     default:
         error("Invalid factor.");
     }
 }
 
-void clean_up() {
+void clean_up(Token_stream & ts) {
     ts.ignore(print);
 }
 
 void calculate() {
 
+    Token_stream ts;
     while(std::cin){
         try {
             std::cout << prompt;
@@ -259,12 +258,12 @@ void calculate() {
             if (t.kind == quit || t.kind == QUIT) 
                 break;
             ts.putback(t);
-            std::cout<<result<<expression()<<'\n';
+            std::cout<<result<<expression(ts)<<'\n';
         }
         catch(const std::exception& e)
         {
             std::cerr << e.what() << '\n';
-            clean_up();
+            clean_up(ts);
         }
     }
     
