@@ -1,4 +1,51 @@
-//Code based on B. STROUSTRUP's book PROGRAMING Principles and Practice using C++
+/*
+    Simple Calculator
+        Code based on B. STROUSTRUP's book: 
+        "PROGRAMING Principles and Practice using C++"
+
+    Hist:
+        Reconstruction: cxnajder            summer 2023
+        Update: Bjorn Stroustrup    august 2007
+        ...
+        Original author: Bjorne Stroustrup
+            (bs@cs.tamu.edu)        spring 2004
+        
+    This code implements calculator with basic expresions
+    Imoprts input data form std::cin stream, outputs to std::cout
+
+    Grammar:
+        Statement:
+            expression
+            print
+            quit
+
+        print:
+            ;
+
+        quit:
+            q or Q
+
+        expression:
+            term
+            expression + term
+            expression - term
+        
+        term:
+            primary
+            term * primary
+            term / primary
+            term % primary
+        
+        primary:
+            number
+            ( expression )
+            - primary
+            + primary
+
+        number:
+            floating-point-literal
+
+*/
 
 #include <iostream>
 #include <string>
@@ -77,12 +124,16 @@ Token Token_stream::get(){
     std::cin >> ch;
     switch (ch) 
     {
-    case quit: case QUIT:
-        return Token{quit};
+    case quit: 
+    case QUIT:
     case print:
-    case '(': case ')':
-    case '*': case '/': case '%':
-    case '+': case '-':
+    case '(': 
+    case ')':
+    case '*': 
+    case '/': 
+    case '%':
+    case '+': 
+    case '-':
         return Token{ch};
     case '.':
     case '0': case '1': case '2': case '3': case '4':
