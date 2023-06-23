@@ -14,10 +14,17 @@
     Imoprts input data form std::cin stream, outputs to std::cout
 
     Grammar:
-        Statement:
-            expression
+
+        calculator:
+            statement
             print
             quit
+
+            contains: token_stream, variables
+
+        Statement:
+            expression
+            declaration
 
         print:
             ;
@@ -50,6 +57,7 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <vector>
 
 
 void error(std::string s1, std::string s2 = ""){
@@ -89,7 +97,7 @@ const std::string prompt = "> ";
 const std::string result = "= ";
 
 const char number = 'n';
-
+const char let = 'l';
 
 class Token{
 public:
@@ -158,15 +166,52 @@ Token Token_stream::get(){
             std::cin >> val;
             return Token{number, val};
         }
-    
     default:
         break;
     }
 }
 
+class Variable {
+public:
+    std::string name;
+    double value;
+};
+
+double get_value(std::vector<Variable> & var_table, std::string s){
+    for (int i = 0; i < var_table.size(); ++i)
+            if (var_table.at(i).name == s )
+                return var_table.at(i).value;
+    error("Accessing: undefined variable ", s);    
+}
+
+void set_value(std::vector<Variable> & var_table, std::string s, const double & d){
+    for (int i = 0; i < var_table.size(); ++i)
+            if (var_table.at(i).name == s ){
+                var_table.at(i).value = d;
+                return;
+            }
+    error("Changing: undefined variable ", s);    
+}
+
+double statement(Token_stream & ts);
+double declaration(Token_stream & ts);
 double expression(Token_stream & ts);
 double term(Token_stream & ts);
 double primary(Token_stream & ts);
+
+double statement(Token_stream & ts)
+{
+    Token t = ts.get();
+    switch (t.kind)
+    {
+    case let:
+        return declaration(ts);
+    
+    default:
+        ts.putback(t);
+        return expression(ts);
+    }
+}
 
 double expression(Token_stream & ts){
     double left = term(ts);
@@ -249,6 +294,7 @@ void clean_up(Token_stream & ts) {
 void calculate() {
 
     Token_stream ts;
+    std::vector<Variable> var_table;
     while(std::cin){
         try {
             std::cout << prompt;
@@ -258,7 +304,7 @@ void calculate() {
             if (t.kind == quit || t.kind == QUIT) 
                 break;
             ts.putback(t);
-            std::cout<<result<<expression(ts)<<'\n';
+            std::cout<<result<<statement(ts)<<'\n';
         }
         catch(const std::exception& e)
         {
