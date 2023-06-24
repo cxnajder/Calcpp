@@ -346,6 +346,8 @@ double primary(Token_stream & ts) {
         return -primary(ts);
     case '+':
         return primary(ts);
+    case vname:
+        return get_value(t.varname);
     default:
         error("Invalid factor.");
     }
