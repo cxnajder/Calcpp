@@ -187,10 +187,12 @@ Token Token_stream::get(){
             return Token(number, val);
         }
     default:
-        if (std::isalpha(static_cast<unsigned char>(ch))) {
+        if (std::isalpha(ch)) {
+            std::string s = "";
+            s += ch;
+            while (std::cin.get(ch) &&  std::isalpha(ch) || std::isdigit(ch))
+                s += ch;
             std::cin.putback(ch);
-            std::string s;
-            std::cin>>s;
             if (s == dec_key)
                 return Token(let);
             return Token(vname, s);
